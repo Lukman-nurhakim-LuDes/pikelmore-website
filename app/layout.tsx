@@ -9,10 +9,10 @@ export const metadata = {
   title: 'PIXELMORÉ | Photography & Cinematic Studio', 
   description: 'Jasa fotografi profesional dan sinematik dengan estetika premium Mocca/Hitam.',
   
-  // --- VERIFIKASI GOOGLE SEARCH CONSOLE ---
-  // Next.js akan mengubah ini menjadi <meta name="google-site-verification" content="google6d01238c53976cf1" />
+  // --- VERIFIKASI GOOGLE SEARCH CONSOLE BARU ---
+  // Kode verifikasi unik Anda ditanamkan di sini:
   verification: {
-    google: 'google6d01238c53976cf1', 
+    google: '9b5idOC6Ce2_GFZmJStbYbVjZ1qelnaRPCkxhu9qpxM', 
   },
   // --------------------------------------------------------
 };
