@@ -50,7 +50,7 @@ const BookingForm = ({ id }) => {
     }
     
     // NOMOR WHATSAPP PIKELMORE (GANTI INI)
-    const whatsappNumber = '6282316641602'; 
+    const whatsappNumber = '6287779152773'; 
 
     // --- 1. Simpan ke Tabel bookings Supabase (INSERT) ---
     const bookingData = {
