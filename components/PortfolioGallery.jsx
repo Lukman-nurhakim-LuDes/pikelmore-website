@@ -1,46 +1,119 @@
-// components/PortfolioGallery.jsx
-'use client'; // Client Component untuk efek hover dinamis
+// components/PortfolioGallery.jsx (VERSI CMS EDIT LANGSUNG FINAL)
+'use client';
 
-import React from 'react';
-
-// Anda akan mengganti ini dengan URL gambar dari Supabase Storage Anda
-const galleryImages = Array(10).fill(0).map((_, i) => ({ 
-    id: i + 1, 
-    // Contoh URL dari Supabase Storage (hanya placeholder)
-    src: `/images/galeri${i + 1}.jpg` 
-}));
+import React, { useState, useEffect, useRef } from 'react';
+import { useAdmin } from '@/context/AdminContext';
+import { fetchContent, updateContent, uploadImage } from '@/lib/api';
 
 const PortfolioGallery = () => {
-  return (
-    <div className="mb-24">
-      <h3 className="font-display text-3xl font-semibold mb-12 text-pikelmore-dark-grey">
-        Koleksi Foto Terbaik Pikelmore
-      </h3>
-      
-      {/* Layout Grid Responsif: 2 kolom di Mobile, 5 kolom di Desktop */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-        {galleryImages.map((image) => (
-          <div key={image.id} className="relative overflow-hidden h-48 md:h-64 shadow-xl group cursor-pointer">
-            {/* Placeholder Visual untuk Gambar */}
-            <div 
-                className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 font-body transition-transform duration-500 group-hover:scale-110"
-                style={{ 
-                    // Ganti dengan style={{backgroundImage: `url(${image.src})`, backgroundSize: 'cover'}}
-                    // Setelah Anda menempatkan gambar di public/ atau Supabase Storage
-                    backgroundImage: 'linear-gradient(135deg, #f0f0f0, #e0e0e0)' 
-                }}
-            >
-              [Gambar {image.id}]
-            </div>
+    const { isEditMode } = useAdmin();
+    // Deklarasi state yang diperlukan
+    const [images, setImages] = useState(Array(10).fill({ id: '', url: '' }));
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const IMAGE_COUNT = 10;
+
+    // --- 1. Fetch 10 URL Gambar dari Supabase ---
+    useEffect(() => {
+        const loadImages = async () => {
+            const fetchedImages = [];
+            for (let i = 1; i <= IMAGE_COUNT; i++) {
+                const id = `gallery_url_${i}`;
+                const url = await fetchContent(id);
+                fetchedImages.push({ id, url: url || '' });
+            }
+            setImages(fetchedImages);
+            setIsLoading(false);
+        };
+        loadImages();
+    }, []);
+
+    // --- 2. Komponen Placeholder dengan Logic Upload ---
+    const ImagePlaceholder = ({ image, index, className }) => {
+        const fileInputRef = useRef(null);
+        const [isUploading, setIsUploading] = useState(false);
+
+        const handleUpload = async (file) => {
+            if (!file) return;
+            setIsUploading(true);
+            const fileName = `gallery-${index}-${Date.now()}`; 
             
-            {/* Efek Hover dan Keterangan */}
-            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-300 flex items-center justify-center">
-                <span className="text-white font-body text-sm opacity-0 group-hover:opacity-100 transition-opacity">Lihat Detail</span>
+            const { success, url: newUrl } = await uploadImage(file, fileName, 'portfolio'); 
+
+            if (success) {
+                await updateContent(image.id, newUrl); 
+                setImages(prevImages => prevImages.map(img => 
+                    img.id === image.id ? { ...img, url: newUrl } : img
+                ));
+                alert('Gambar galeri berhasil diunggah dan diperbarui!');
+            } else {
+                alert(`Gagal mengunggah gambar: ${newUrl || 'Lihat konsol.'}`);
+            }
+            setIsUploading(false);
+        };
+
+        const innerContent = isUploading 
+            ? 'Mengunggah...' 
+            : (image.url ? '' : `Upload Gambar ${index}`); 
+
+        return (
+            <div className={`relative overflow-hidden shadow-xl group cursor-pointer ${className}`}
+                style={{ border: isEditMode ? '2px dashed red' : 'none' }}>
+                
+                {/* Tampilan Gambar (Menggunakan URL Supabase) */}
+                {image.url && !isUploading ? (
+                    <div 
+                        className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" 
+                        style={{ backgroundImage: `url(${image.url})` }}
+                    />
+                ) : (
+                    // Placeholder default (warna Mocca/Taupe)
+                    <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
+                        {innerContent}
+                    </div>
+                )}
+
+                {/* Antarmuka Upload (Hanya Tampil di Edit Mode) */}
+                {isEditMode && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleUpload(e.target.files[0])} accept="image/*" disabled={isUploading}/>
+                        {/* TOMBOL UPLOAD DI-FIX KE WARNA MOCCA/HITAM */}
+                        <button 
+                            onClick={() => fileInputRef.current.click()}
+                            className="bg-pikelmore-mocca text-white px-3 py-1 text-sm rounded hover:bg-pikelmore-taupe disabled:bg-gray-400"
+                            disabled={isUploading}
+                        >
+                            {isUploading ? 'Upload...' : 'Upload Baru'}
+                        </button>
+                    </div>
+                )}
+                
+                {/* EFEK HOVER DI MODE VIEW */}
+                {!isEditMode && (
+                   <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-300 flex items-center justify-center">
+                        <span className="text-white font-body text-sm opacity-0 group-hover:opacity-100 transition-opacity">Lihat Detail</span>
+                    </div>
+                )}
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+        );
+    };
+
+    if (isLoading) return <div className="text-center py-24 text-white">Memuat Galeri...</div>;
+
+    return (
+        <div className="mb-24">
+            <h3 className="font-display text-3xl font-semibold mb-12 text-pikelmore-mocca">
+                Koleksi Foto Terbaik Pikelmore
+            </h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                {images.map((image, index) => (
+                    // Menggunakan key image.id (dari Supabase)
+                    <ImagePlaceholder key={image.id} image={image} index={index + 1} className="h-48 md:h-64" />
+                ))}
+            </div>
+        </div>
+    );
 };
 export default PortfolioGallery;

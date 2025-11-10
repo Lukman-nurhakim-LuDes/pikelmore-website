@@ -1,0 +1,15 @@
+# netlify.toml (File ini wajib ada di root directory)
+
+[build]
+  # Next.js build command
+  command = "npm run build"
+  # Direktori output Next.js (Netlify akan mengambil file dari sini)
+  publish = ".next"
+
+[build.environment]
+  # Menetapkan versi Node.js yang stabil untuk menghindari error pada Next.js
+  NODE_VERSION = "20"
+  
+# Plugin khusus Netlify untuk Next.js - INI PENTING!
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
