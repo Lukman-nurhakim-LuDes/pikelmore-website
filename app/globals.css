@@ -1,0 +1,20 @@
+/* app/globals.css */
+
+/* --- Impor Font Pikelmore (HARUS PALING ATAS) --- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+/* --- Direktif WAJIB Tailwind CSS --- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Styling Dasar --- */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  color: #FFFFFF; /* Teks Default Putih (UNTUK JUDUL & FOOTER) */
+  background-color: #000000; /* Background Default Hitam */
+}
