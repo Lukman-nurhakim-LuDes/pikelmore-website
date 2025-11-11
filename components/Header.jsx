@@ -18,19 +18,18 @@ const Header = () => {
     // Header GELAP, Ramping
     <header className="fixed top-0 left-0 w-full bg-pikelmore-dark z-50 py-2 border-b border-pikelmore-taupe">
       <div className="container mx-auto flex justify-between items-center px-6 md:px-8 h-[55px]">
-        
-        {/* Logo Gambar */}
+       
         <div className="logo">
-          <Link href="/">
-            <Image 
-                src="Pikelmoree.png" 
-                alt="PIXELMORÉ - More Than Just Moments"
-                width={150} 
-                height={35} 
-                priority 
-            />
-          </Link>
-        </div>
+          <Link href="/">
+            <Image 
+              src="/Pixelmoree.png" // <-- PATH FINAL DAN BENAR
+              alt="PIXELMORÉ - More Than Just Moments"
+              width={150} 
+              height={35} 
+              priority 
+            />
+          </Link>
+        </div>
         
         {/* --- NAVIGASI DESKTOP --- */}
         <nav className="hidden md:block">
