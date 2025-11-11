@@ -1,0 +1,8 @@
+# public/robots.txt
+
+# Izinkan semua crawler (Google, Bing, dll) untuk mengakses seluruh situs
+User-agent: *
+Allow: /
+
+# Mendefinisikan lokasi Sitemap untuk membantu Google
+Sitemap: https://portfoliopixelmore.netlify.app/sitemap.xml
