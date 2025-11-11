@@ -23,7 +23,7 @@ const Header = () => {
         <div className="logo">
           <Link href="/">
             <Image 
-                src="/pikelmoree.png" 
+                src="/Pikelmoree.png" 
                 alt="PIXELMORÉ - More Than Just Moments"
                 width={150} 
                 height={35} 
