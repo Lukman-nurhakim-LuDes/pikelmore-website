@@ -4,11 +4,10 @@
 // Harus menjadi Client Component
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase'; // WAJIB untuk Auth Listener dan Fetching
+import { supabase } from '@/lib/supabase'; 
 import PackageCard from '@/components/PackageCard';
 import { useAdmin } from '@/context/AdminContext';
 import { createNewPackage, fetchAllPackages } from '@/lib/api'; 
-// Pastikan fetchAllPackages diimpor jika Anda memindahkannya ke lib/api.js
 
 const PackageSection = ({ id }) => {
   const [packages, setPackages] = useState([]);
@@ -17,13 +16,11 @@ const PackageSection = ({ id }) => {
   
   const { isEditMode } = useAdmin(); 
   
-  // State untuk menyimpan sesi Supabase yang aktif
   const [session, setSession] = useState(null); 
 
   // --- FUNGSI UTAMA FETCH ---
   const fetchPackages = async () => {
     setLoading(true);
-    // Menggunakan fungsi API dari lib/api.js
     const data = await fetchAllPackages(); 
     if (data && data.length > 0) {
       setPackages(data);
@@ -37,7 +34,6 @@ const PackageSection = ({ id }) => {
   
   // --- FUNGSI CREATE: Tambah Paket Baru ---
   const handleAddPackage = async () => {
-    // Memastikan user benar-benar terotentikasi dan mode edit ON
     if (!isEditMode || !session) { 
         alert("Gagal: Anda harus login ke Supabase Auth untuk menambah paket.");
         return;
@@ -46,7 +42,6 @@ const PackageSection = ({ id }) => {
     const { success, data: newPackage } = await createNewPackage();
 
     if (success) {
-      // Tambahkan paket baru ke state lokal agar langsung terlihat
       setPackages(prevPackages => [...prevPackages, newPackage]);
       alert("Paket baru telah ditambahkan! Silakan edit detailnya.");
     } else {
@@ -54,15 +49,15 @@ const PackageSection = ({ id }) => {
     }
   };
   
-  // --- EFFECT: Memuat Sesi Awal dan Session Listener ---
+  // --- EFFECT: Memuat Sesi Awal dan Session Listener (FIX ERROR TYPE) ---
   useEffect(() => {
     // 1. Ambil Sesi Saat Ini
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    // 2. Dengarkan Perubahan Status Otentikasi
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    // 2. Dengarkan Perubahan Status Otentikasi (PERBAIKAN KRITIS UNTUK UNSUBSCRIBE)
+    const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         // Refresh data paket setelah login/logout
@@ -72,9 +67,11 @@ const PackageSection = ({ id }) => {
       }
     );
 
-    // 3. Cleanup Listener
+    // 3. Cleanup Listener (MENGHINDARI TypeError)
     return () => {
-      if (authListener) authListener.unsubscribe();
+      if (authListener && typeof authListener.unsubscribe === 'function') {
+        authListener.unsubscribe();
+      }
     };
   }, []); 
 
@@ -96,7 +93,7 @@ const PackageSection = ({ id }) => {
           <button 
             onClick={handleAddPackage} 
             className="mb-10 px-6 py-2 bg-pikelmore-mocca text-white font-semibold rounded-md hover:bg-pikelmore-taupe transition-colors disabled:bg-gray-400"
-            disabled={loading || !session} // Disable jika loading atau belum ada session
+            disabled={loading || !session} 
           >
             + Tambah Paket Baru
           </button>
