@@ -1,13 +1,14 @@
-// components/VisualCollage.jsx (FINAL FINAL FIX: Image Rendering)
+// components/VisualCollage.jsx
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useAdmin } from '@/context/AdminContext'; 
 import { fetchContent, updateContent, uploadImage } from '@/lib/api'; 
-import Image from 'next/image'; // <-- WAJIB: Import Next.js Image Component
+import Image from 'next/image'; // WAJIB: Import Next.js Image Component
 
 const VisualCollage = () => {
   const { isEditMode } = useAdmin();
+  
   const [content, setContent] = useState({ 
     title: 'PIXELMORÉ', tagline: 'More Than Just Moments',
     url_main: '', 
@@ -24,7 +25,7 @@ const VisualCollage = () => {
     const loadContent = async () => {
       const fetchedTitle = await fetchContent(titleId);
       const fetchedTagline = await fetchContent(taglineId);
-      const fetchedUrl = await fetchContent(urlId); // Ini harus URL publik
+      const fetchedUrl = await fetchContent(urlId); 
 
       setContent(prev => ({
         ...prev,
@@ -70,9 +71,8 @@ const VisualCollage = () => {
   if (isLoading) return <div className="text-center py-32 text-pikelmore-black">Memuat Visual...</div>;
 
   return (
-    // Pastikan section ini tidak memiliki padding vertikal jika Anda ingin full-bleed
-    <section className="bg-pikelmore-white text-pikelmore-black"> 
-      <div className="container mx-auto px-0 md:px-0 max-w-full"> {/* <-- Ubah px-6 menjadi px-0 */}
+    <section className="py-24 md:py-32 bg-pikelmore-white text-pikelmore-black"> 
+      <div className="container mx-auto px-6 md:px-8 max-w-5xl">
 
         {/* --- Konten Teks Edit Teks (DI LUAR AREA FOTO) --- */}
         {isEditMode && (
@@ -86,25 +86,24 @@ const VisualCollage = () => {
         )}
 
         {/* --- AREA FOTO LANDSCAPE PENUH (FOKUS UTAMA) --- */}
-        {/* Hapus mx-auto dan border jika ingin full-bleed */}
         <div 
-            className="relative w-full overflow-hidden group" 
-            style={{ aspectRatio: '16 / 9' }} 
+            className="relative mx-auto border border-pikelmore-taupe shadow-lg overflow-hidden group" 
+            style={{ width: '100%', aspectRatio: '16 / 9' }} // Landscape 16:9
         >
             
-            {/* GAMBAR LANDSCAPE: Gunakan <Image /> Component */}
+            {/* GAMBAR LANDSCAPE (Background / Image Component) */}
             {content.url_main ? (
+                // FIX: Menggunakan Image fill untuk mengisi seluruh area
                 <Image 
                     src={content.url_main}
                     alt={content.title || "PIXELMORÉ Cinematic Teaser"}
-                    fill // <-- Mengisi seluruh parent
-                    style={{ objectFit: 'cover' }} // <-- Memastikan gambar memenuhi area tanpa terdistorsi
+                    fill // <-- Mengisi seluruh parent div
+                    style={{ objectFit: 'cover' }} // Memastikan gambar memenuhi area
                     priority 
-                    sizes="(max-width: 768px) 100vw, 
-                           (max-width: 1200px) 100vw, 
-                           100vw"
+                    sizes="(max-width: 768px) 100vw, 100vw"
                 />
             ) : (
+                // Placeholder jika URL belum ada
                 <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
                     FOTO LANDSCAPE PENUH BELUM DIUNGGAH
                 </div>
@@ -137,7 +136,6 @@ const VisualCollage = () => {
             )}
         </div>
         
-        {/* ... (Teks Watermark Bawah jika diperlukan) ... */}
         <div className="text-center font-body text-sm mt-8 text-pikelmore-black">
            PIXELMORÉ
         </div>
