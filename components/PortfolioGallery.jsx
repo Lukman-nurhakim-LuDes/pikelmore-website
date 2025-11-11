@@ -1,12 +1,12 @@
-// components/PortfolioGallery.jsx (VERSI FINAL TERBAIK)
+// components/PortfolioGallery.jsx (VERSI FINAL: Zoom & Aspect Ratio Fix)
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { fetchContent, updateContent, uploadImage } from '@/lib/api'; 
-import Image from 'next/image'; // WAJIB
-import LightboxModal from './LightboxModal'; // WAJIB
-import { getUniqueUrl } from '@/lib/utils'; // WAJIB untuk Cache Busting
+import Image from 'next/image';
+import LightboxModal from './LightboxModal'; 
+import { getUniqueUrl } from '@/lib/utils'; // Cache Busting
 
 const PortfolioGallery = () => {
     const { isEditMode } = useAdmin();
@@ -44,7 +44,7 @@ const PortfolioGallery = () => {
             setIsUploading(true);
             const fileName = `gallery-${index}-${Date.now()}`; 
             
-            const { success, url: newUrl } = await uploadImage(file, fileName, 'portfolio'); 
+            const { success, url: newUrl } = await uploadImage(file, fileName, 'portfolio'); // Upload ke folder 'portfolio'
 
             if (success) {
                 await updateContent(image.id, newUrl); 
@@ -65,7 +65,6 @@ const PortfolioGallery = () => {
         return (
             <div 
                 className={`relative overflow-hidden shadow-xl group cursor-pointer ${className}`}
-                // Menambahkan aspek rasio 1/1 pada div agar tidak terpotong vertikal
                 style={{ border: isEditMode ? '2px dashed red' : 'none', aspectRatio: '1 / 1' }} 
                 onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} // <-- TRIGGER LIGHTBOX
             >
@@ -122,7 +121,6 @@ const PortfolioGallery = () => {
                 Koleksi Foto Terbaik Pikelmore
             </h3>
             
-            {/* Grid Galeri */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
                 {images.map((image, index) => (
                     <ImagePlaceholder key={image.id} image={image} index={index + 1} className="h-48 md:h-64" />
@@ -134,7 +132,7 @@ const PortfolioGallery = () => {
                 <LightboxModal 
                     src={selectedImage} 
                     alt="Zoomed Portfolio Image"
-                    onClose={closeLightbox}
+                    onClose={() => setSelectedImage(null)}
                 />
             )}
         </div>
