@@ -3,16 +3,14 @@
   
   <url>
     <loc>https://portfoliopixelmore.netlify.app/</loc>
-    <lastmod>2025-11-11</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   
   <url>
     <loc>https://portfoliopixelmore.netlify.app/content</loc>
-    <lastmod>2025-11-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   
-  </urlset>
+</urlset>
