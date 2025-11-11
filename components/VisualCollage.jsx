@@ -1,14 +1,13 @@
-// components/VisualCollage.jsx (FINAL FIX: Single Photo Teaser & CMS)
+// components/VisualCollage.jsx (FINAL FINAL FIX: Image Rendering)
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useAdmin } from '@/context/AdminContext'; 
 import { fetchContent, updateContent, uploadImage } from '@/lib/api'; 
+import Image from 'next/image'; // <-- WAJIB: Import Next.js Image Component
 
 const VisualCollage = () => {
   const { isEditMode } = useAdmin();
-  
-  // State untuk menyimpan URL gambar dan teks (hanya main)
   const [content, setContent] = useState({ 
     title: 'PIXELMORÉ', tagline: 'More Than Just Moments',
     url_main: '', 
@@ -16,7 +15,6 @@ const VisualCollage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ID Konten di Supabase
   const titleId = 'collage_title';
   const taglineId = 'collage_tagline';
   const urlId = 'collage_url_main';
@@ -26,8 +24,8 @@ const VisualCollage = () => {
     const loadContent = async () => {
       const fetchedTitle = await fetchContent(titleId);
       const fetchedTagline = await fetchContent(taglineId);
-      const fetchedUrl = await fetchContent(urlId);
-      
+      const fetchedUrl = await fetchContent(urlId); // Ini harus URL publik
+
       setContent(prev => ({
         ...prev,
         title: fetchedTitle || prev.title,
@@ -72,36 +70,43 @@ const VisualCollage = () => {
   if (isLoading) return <div className="text-center py-32 text-pikelmore-black">Memuat Visual...</div>;
 
   return (
-    <section className="py-24 md:py-32 bg-pikelmore-white text-pikelmore-black">
-      <div className="container mx-auto px-6 md:px-8 max-w-5xl">
+    // Pastikan section ini tidak memiliki padding vertikal jika Anda ingin full-bleed
+    <section className="bg-pikelmore-white text-pikelmore-black"> 
+      <div className="container mx-auto px-0 md:px-0 max-w-full"> {/* <-- Ubah px-6 menjadi px-0 */}
 
         {/* --- Konten Teks Edit Teks (DI LUAR AREA FOTO) --- */}
         {isEditMode && (
-          <div className="text-center font-display mb-4 text-pikelmore-black border border-dashed border-red-500 p-3">
+          <div className="text-center font-display mb-4 text-pikelmore-black border border-dashed border-red-500 p-3 mx-auto max-w-5xl">
             <button onClick={handleSave} disabled={isSaving} className="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-gray-400 mb-4">
                 {isSaving ? 'Menyimpan Teks...' : 'Simpan Teks Teaser'}
             </button>
-             {/* Input Teks */}
             <input type="text" value={content.title} onChange={(e) => setContent(c => ({...c, title: e.target.value}))} className="font-display text-4xl md:text-6xl font-extrabold mb-1 text-black border p-1 text-center w-full" />
             <input type="text" value={content.tagline} onChange={(e) => setContent(c => ({...c, tagline: e.target.value}))} className="text-sm font-body text-pikelmore-dark-grey w-full text-center border p-1" />
           </div>
         )}
 
         {/* --- AREA FOTO LANDSCAPE PENUH (FOKUS UTAMA) --- */}
+        {/* Hapus mx-auto dan border jika ingin full-bleed */}
         <div 
-            className="relative mx-auto border border-pikelmore-taupe shadow-lg overflow-hidden group" 
-            style={{ width: '100%', aspectRatio: '16 / 9' }} // Landscape 16:9
+            className="relative w-full overflow-hidden group" 
+            style={{ aspectRatio: '16 / 9' }} 
         >
             
-            {/* Gambar Landscape (Background) */}
+            {/* GAMBAR LANDSCAPE: Gunakan <Image /> Component */}
             {content.url_main ? (
-                <div 
-                    className="w-full h-full bg-cover bg-center transition-transform duration-500" 
-                    style={{ backgroundImage: `url(${content.url_main})` }}
+                <Image 
+                    src={content.url_main}
+                    alt={content.title || "PIXELMORÉ Cinematic Teaser"}
+                    fill // <-- Mengisi seluruh parent
+                    style={{ objectFit: 'cover' }} // <-- Memastikan gambar memenuhi area tanpa terdistorsi
+                    priority 
+                    sizes="(max-width: 768px) 100vw, 
+                           (max-width: 1200px) 100vw, 
+                           100vw"
                 />
             ) : (
                 <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
-                    FOTO LANDSCAPE PENUH
+                    FOTO LANDSCAPE PENUH BELUM DIUNGGAH
                 </div>
             )}
             
