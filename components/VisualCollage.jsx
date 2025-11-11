@@ -134,7 +134,7 @@ const VisualCollage = () => {
         
         {/* ... (Teks Watermark Bawah jika diperlukan) ... */}
         <div className="text-center font-body text-sm mt-8 text-pikelmore-black">
-           Watermark atau Teks Footer
+           PIXELMORÉ
         </div>
         
       </div>
