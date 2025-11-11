@@ -22,19 +22,18 @@ const VisualCollage = () => {
 
   // --- 1. Fetch Konten ---
   useEffect(() => {
-    // ... (Logic Fetching data dari Supabase) ...
     const loadContent = async () => {
-        const fetchedTitle = await fetchContent(titleId);
-        const fetchedTagline = await fetchContent(taglineId);
-        const fetchedUrl = await fetchContent(urlId); 
-    
-        setContent(prev => ({
-            ...prev,
-            title: fetchedTitle || prev.title,
-            tagline: fetchedTagline || prev.tagline,
-            url_main: fetchedUrl,
-        }));
-        setIsLoading(false);
+      const fetchedTitle = await fetchContent(titleId);
+      const fetchedTagline = await fetchContent(taglineId);
+      const fetchedUrl = await fetchContent(urlId); 
+
+      setContent(prev => ({
+        ...prev,
+        title: fetchedTitle || prev.title,
+        tagline: fetchedTagline || prev.tagline,
+        url_main: fetchedUrl,
+      }));
+      setIsLoading(false);
     };
     loadContent();
   }, []);
@@ -88,27 +87,39 @@ const VisualCollage = () => {
 
         {/* --- AREA FOTO LANDSCAPE PENUH (FOKUS UTAMA) --- */}
         <div 
-            className="relative w-full overflow-hidden group" 
-            style={{ width: '100%', aspectRatio: '16 / 9' }} 
+            className="relative mx-auto border border-pikelmore-taupe shadow-lg overflow-hidden group" 
+            style={{ width: '100%', aspectRatio: '16 / 9' }} // Landscape 16:9
         >
             
             {/* GAMBAR LANDSCAPE (Background / Image Component) */}
             {content.url_main ? (
+                // FIX: Menggunakan Image fill untuk mengisi seluruh area
                 <Image 
                     src={content.url_main}
                     alt={content.title || "PIXELMORÉ Cinematic Teaser"}
-                    fill // Mengisi seluruh parent div
-                    style={{ objectFit: 'cover' }} // FIX: objectFit: 'cover' untuk mengisi bingkai
+                    fill // <-- Mengisi seluruh parent div
+                    style={{ objectFit: 'cover' }} // Memastikan gambar memenuhi area
                     priority 
                     sizes="(max-width: 768px) 100vw, 100vw"
                 />
             ) : (
+                // Placeholder jika URL belum ada
                 <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
                     FOTO LANDSCAPE PENUH BELUM DIUNGGAH
                 </div>
             )}
             
-            {/* ... (Konten Teks di atas Gambar dan Antarmuka Edit/Upload) ... */}
+            {/* --- KONTEN TEKS DIPOSISIKAN DI TENGAH GAMBAR (VIEW MODE ONLY) --- */}
+            {!isEditMode && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10 bg-black/30">
+                    <h2 className="font-display text-4xl md:text-6xl font-extrabold mb-1 text-white uppercase tracking-widest">
+                        {content.title}
+                    </h2>
+                    <p className="text-sm font-body text-pikelmore-ivory">
+                        {content.tagline}
+                    </p>
+                </div>
+            )}
             
             {/* Antarmuka Edit/Upload Gambar */}
             {isEditMode && (
@@ -125,7 +136,9 @@ const VisualCollage = () => {
             )}
         </div>
         
-        {/* ... (PIXELMORÉ) ... */}
+        <div className="text-center font-body text-sm mt-8 text-pikelmore-black">
+           PIXELMORÉ
+        </div>
         
       </div>
     </section>
