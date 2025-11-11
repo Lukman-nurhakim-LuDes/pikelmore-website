@@ -95,91 +95,99 @@ Mohon konfirmasi ketersediaan dan detail selanjutnya.
   };
 
   return (
-    <section id={id} className="py-24 md:py-32 bg-white text-pikelmore-dark-grey">
-      <div className="container mx-auto px-6 md:px-8 max-w-3xl">
-        <h2 className="font-display text-4xl md:text-5xl font-bold mb-8 text-center text-pikelmore-gold">
+    <section id={id} className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <h2 className="text-pikelmore-dark text-center text-4xl font-display mb-10">
           Pesan Sekarang
         </h2>
-        <div className="border p-8 rounded-lg shadow-xl bg-gray-50">
-          
-          {loading && <p className="text-center font-body">Memuat pilihan paket...</p>}
-          {error && <p className="text-center font-body text-red-600 border border-red-600 p-2 rounded mb-4">{error}</p>}
-
-          {!loading && (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* Pilihan Paket */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">Pilih Paket:</label>
-                <select 
-                    name="package_name"
-                    value={formData.package_name}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-gold focus:ring-pikelmore-gold transition-colors"
-                    required
-                >
-                    <option value="">-- Pilih Paket Fotografi --</option>
-                    {packages.map(pkgName => (
-                        <option key={pkgName} value={pkgName}>{pkgName}</option>
-                    ))}
-                </select>
-              </div>
-
-              {/* Nama Klien */}
-              <div>
-                <label className="block text-sm font-semibold mb-2" htmlFor="name">Nama Lengkap</label>
-                <input 
-                    type="text" 
-                    name="name"
-                    id="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-gold focus:ring-pikelmore-gold"
-                    required
-                />
-              </div>
-
-              {/* Nomor WhatsApp */}
-              <div>
-                <label className="block text-sm font-semibold mb-2" htmlFor="whatsapp">Nomor WhatsApp (Contoh: 62812...)</label>
-                <input 
-                    type="tel" 
-                    name="whatsapp"
-                    id="whatsapp"
-                    value={formData.whatsapp}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-gold focus:ring-pikelmore-gold"
-                    required
-                    pattern="[0-9]+" 
-                    title="Hanya masukkan angka."
-                />
-              </div>
-
-              {/* Tanggal yang Diinginkan */}
-              <div>
-                <label className="block text-sm font-semibold mb-2" htmlFor="preferred_date">Tanggal Pemotretan yang Diinginkan</label>
-                <input 
-                    type="date" 
-                    name="preferred_date"
-                    id="preferred_date"
-                    value={formData.preferred_date}
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-gold focus:ring-pikelmore-gold"
-                    required
-                />
-              </div>
-
-              {/* Tombol Submit */}
-              <button 
-                type="submit" 
-                className="w-full bg-pikelmore-gold text-white font-body font-bold py-3 rounded-lg shadow-md hover:opacity-90 transition-colors disabled:bg-gray-400"
-                disabled={isSubmitting || loading}
+        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Pilih Paket */}
+            <div>
+              <label htmlFor="package" className="block text-pikelmore-dark text-sm font-semibold mb-2">
+                Pilih Paket
+              </label>
+              <select
+                id="package"
+                name="package"
+                value={formData.package}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
+                           text-pikelmore-dark" // <-- FIX INI: Tambahkan text-pikelmore-dark
               >
-                {isSubmitting ? 'Memproses...' : 'Kirim Pesanan & Lanjutkan ke WhatsApp'}
-              </button>
-            </form>
-          )}
+                <option value="">-- Pilih Paket Fotografi --</option>
+                {packages.map((pkg) => (
+                  <option key={pkg.id} value={pkg.name}>
+                    {pkg.name} - Rp{pkg.price.toLocaleString('id-ID')}
+                  </option>
+                ))}
+              </select>
+            </div>
 
+            {/* Nama Lengkap */}
+            <div>
+              <label htmlFor="fullName" className="block text-pikelmore-dark text-sm font-semibold mb-2">
+                Nama Lengkap
+              </label>
+              <input
+                type="text"
+                id="fullName"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder="Masukkan nama lengkap Anda"
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
+                           text-pikelmore-dark placeholder-gray-500" // <-- FIX INI: Tambahkan text-pikelmore-dark dan placeholder-gray-500
+              />
+            </div>
+
+            {/* Nomor WhatsApp */}
+            <div>
+              <label htmlFor="whatsapp" className="block text-pikelmore-dark text-sm font-semibold mb-2">
+                Nomor WhatsApp (Contoh: 62812...)
+              </label>
+              <input
+                type="tel"
+                id="whatsapp"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                placeholder="Contoh: 6281234567890"
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
+                           text-pikelmore-dark placeholder-gray-500" // <-- FIX INI
+              />
+            </div>
+
+            {/* Tanggal Pemotretan */}
+            <div>
+              <label htmlFor="date" className="block text-pikelmore-dark text-sm font-semibold mb-2">
+                Tanggal Pemotretan yang Diinginkan
+              </label>
+              <input
+                type="date"
+                id="date"
+                name="date"
+                value={formData.date}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
+                           text-pikelmore-dark" // <-- FIX INI: Tanggal tidak pakai placeholder-gray-500
+              />
+            </div>
+            
+            {/* ... (tombol submit dan pesan loading tetap sama) ... */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-pikelmore-mocca text-white py-2 px-4 rounded-md hover:bg-opacity-90 transition-colors duration-300 font-semibold"
+            >
+              {loading ? 'Mengirim...' : 'Kirim Pesan'}
+            </button>
+            {message && <p className="mt-4 text-center text-sm text-green-600">{message}</p>}
+          </form>
         </div>
       </div>
     </section>
