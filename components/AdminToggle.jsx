@@ -1,18 +1,16 @@
-// components/AdminToggle.jsx (FINAL FIX: Mode Tersembunyi)
+// components/AdminToggle.jsx (FINAL FIX: SELALU TAMPIL)
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useAdmin } from '@/context/AdminContext';
-import { useSearchParams } from 'next/navigation'; // <-- Import Next.js hook
+import React, { useState } from 'react';
+import { useAdmin } from '@/context/AdminContext'; 
+// Hapus useSearchParams karena tidak memerlukannya lagi
 
 const AdminToggle = () => {
     const { isEditMode, setIsEditMode } = useAdmin();
     const [password, setPassword] = useState('');
-    const ADMIN_PASSWORD = 'Lukmannr24'; 
     
-    // Gunakan useSearchParams untuk memeriksa URL
-    const searchParams = useSearchParams(); 
-    const showAdminToggle = searchParams.get('admin') === 'true'; // <-- Cek parameter ?admin=true
+    // GANTI dengan kata sandi rahasia yang SANGAT KUAT
+    const ADMIN_PASSWORD = 'Lukmannr24'; 
 
     const handleLogin = () => {
         if (password === ADMIN_PASSWORD) {
@@ -24,7 +22,7 @@ const AdminToggle = () => {
         setPassword('');
     };
 
-    // Jika sedang dalam Mode Edit, selalu tampilkan tombol Logout
+    // Tampilan Logout (Jika Sudah Login)
     if (isEditMode) {
         return (
              <div className="fixed top-20 right-4 p-2 bg-pikelmore-mocca text-white rounded shadow-xl z-[1000]">
@@ -39,12 +37,7 @@ const AdminToggle = () => {
         );
     }
     
-    // Jika tidak ada parameter ?admin=true di URL, JANGAN TAMPILKAN APA PUN
-    if (!showAdminToggle) {
-        return null;
-    }
-
-    // Tampilan Login (Hanya muncul jika URL mengandung ?admin=true)
+    // Tampilan Login (SELALU MUNCUL SECARA DEFAULT)
     return (
         <div className="fixed top-20 right-4 p-3 bg-pikelmore-dark text-white rounded shadow-xl z-[1000]">
             <input
@@ -52,7 +45,8 @@ const AdminToggle = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password Admin"
-                className="p-1 text-sm text-pikelmore-dark-grey rounded mr-2"
+                // Menggunakan warna gelap agar terlihat di background terang (jika ada)
+                className="p-1 text-sm text-pikelmore-dark-grey rounded mr-2" 
             />
             <button onClick={handleLogin} className="bg-pikelmore-mocca px-3 py-1 text-xs rounded hover:opacity-90">
                 Login
