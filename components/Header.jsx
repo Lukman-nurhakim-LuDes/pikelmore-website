@@ -1,6 +1,5 @@
-// components/Header.jsx
+// components/Header.jsx (FINAL FIX: Dark Header & Logo Image)
 'use client'; 
-// Harus menjadi Client Component
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link'; 
@@ -20,41 +19,50 @@ const Header = () => {
             }
         });
 
-        // Cleanup listener jika ada (walaupun di sini tidak ada listener, ini praktik yang baik)
-        return () => {
-            // Unsubscribe jika ada listener aktif
-        };
+        // Cleanup listener jika ada (praktik yang baik)
+        return () => {};
     }, []);
     // ------------------------------------------------------------------
 
     const navItems = [
         { name: 'Home', href: '/' },
-        { name: 'Tentang Kami', href: '/#about' },
-        { name: 'Portofolio', href: '/#portfolio' },
-        { name: 'Paket Harga', href: '/#packages' },
-        { name: 'Pemesanan', href: '/#booking' },
-        // Item untuk admin di halaman konten
-        { name: 'Halaman Admin', href: '/content' }, 
+        { name: 'Tentang Kami', href: '/content#about' },
+        { name: 'Portofolio', href: '/content#portfolio' },
+        { name: 'Paket Harga', href: '/content#package' },
+        { name: 'Pemesanan', href: '/content#booking' },
+        { name: 'Info', href: '/content#info' }, 
+        
     ];
+
+    // Fungsi untuk menutup menu setelah klik
+    const handleNavClick = () => {
+        setIsMenuOpen(false);
+    };
 
     return (
         <>
             <AdminToggle /> 
-            <header className="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-sm shadow-md">
-                <div className="container mx-auto px-6 md:px-8 flex justify-between items-center py-4">
+            {/* HEADER GELAP FINAL: Menggunakan bg-pikelmore-dark tanpa blur/opacity */}
+            <header className="fixed top-0 left-0 w-full z-50 bg-pikelmore-dark py-0 border-b border-pikelmore-taupe"> 
+                <div className="container mx-auto px-6 md:px-8 flex justify-between items-center py-0 h-[55px]">
                     
-                    {/* Logo/Nama Brand */}
-                    <Link href="/" className="flex items-center space-x-2">
-                        <Image src="/logo-pikelmore.svg" alt="PIXELMORÉ Logo" width={32} height={32} className="w-8 h-8"/>
-                        <span className="font-display text-xl font-extrabold tracking-widest text-pikelmore-black">
-                            PIXELMORÉ
-                        </span>
-                    </Link>
+                    {/* LOGO GAMBAR FIX: Menggunakan nama file dan ukuran yang benar */}
+                    <div className="logo flex items-center">
+                        <Link href="/">
+                            <Image 
+                                src="/Pixelmoree.png" // <-- PATH DENGAN NAMA FILE DARI EXPLORER
+                                alt="PIXELMORÉ - More Than Just Moments"
+                                width={150} 
+                                height={35} 
+                                priority 
+                            />
+                        </Link>
+                    </div>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex space-x-6">
                         {navItems.map((item) => (
-                            <Link key={item.name} href={item.href} className="font-body text-sm font-medium text-pikelmore-dark-grey hover:text-pikelmore-mocca transition-colors">
+                            <Link key={item.name} href={item.href} className="font-body text-sm font-medium text-white hover:text-pikelmore-mocca transition-colors">
                                 {item.name}
                             </Link>
                         ))}
@@ -62,27 +70,23 @@ const Header = () => {
 
                     {/* Mobile Menu Button */}
                     <button 
-                        className="md:hidden text-pikelmore-black"
+                        className="md:hidden text-white text-3xl"
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                     >
-                        {isMenuOpen ? (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        ) : (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                        )}
+                        {isMenuOpen ? '✕' : '☰'}
                     </button>
                 </div>
                 
                 {/* Mobile Menu Dropdown */}
                 {isMenuOpen && (
-                    <div className="md:hidden bg-white/95 shadow-lg absolute w-full top-full">
+                    <div className="md:hidden bg-pikelmore-dark/95 shadow-lg absolute w-full top-full z-40">
                         <nav className="flex flex-col p-4 space-y-2">
                             {navItems.map((item) => (
                                 <Link 
                                     key={item.name} 
                                     href={item.href} 
-                                    onClick={() => setIsMenuOpen(false)} // Tutup menu setelah klik
-                                    className="font-body text-md font-medium text-pikelmore-dark-grey hover:text-pikelmore-mocca transition-colors py-2 border-b last:border-b-0"
+                                    onClick={handleNavClick}
+                                    className="font-body text-md font-medium text-white hover:text-pikelmore-mocca transition-colors py-2 border-b border-gray-700 last:border-b-0"
                                 >
                                     {item.name}
                                 </Link>
