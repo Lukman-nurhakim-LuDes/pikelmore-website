@@ -3,13 +3,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '@/context/AdminContext';
-import { fetchContent, updateContent, uploadImage } from '@/lib/api'; // Menggunakan fetchContent untuk mengambil URL
+import { fetchContent, updateContent, uploadImage } from '@/lib/api'; 
 import Image from 'next/image';
 import LightboxModal from './LightboxModal'; // Import komponen Lightbox
 
 const PortfolioGallery = () => {
     const { isEditMode } = useAdmin();
-    // Gunakan state untuk menyimpan 10 URL gambar Galeri
+    // Gunakan state untuk menyimpan 10 URL gambar Galeri dari tabel 'content'
     const [images, setImages] = useState(Array(10).fill({ id: '', url: '' })); 
     const [isLoading, setIsLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null); // State untuk Lightbox
@@ -65,17 +65,13 @@ const PortfolioGallery = () => {
         return (
             <div 
                 className={`relative overflow-hidden shadow-xl group cursor-pointer ${className}`}
-                style={{ border: isEditMode ? '2px dashed red' : 'none' }}
+                style={{ border: isEditMode ? '2px dashed red' : 'none', aspectRatio: '1 / 1' }} // Gunakan aspect ratio 1:1
                 onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} // <-- KLIK UNTUK LIGHTBOX/ZOOM
             >
                 
                 {/* Tampilan Gambar (FIX: object-contain) */}
                 {image.url && !isUploading ? (
-                    <div 
-                        className="relative w-full h-full bg-pikelmore-taupe" 
-                        // Tambahkan aspect ratio untuk mencegah elemen collapse
-                        style={{ aspectRatio: '1/1' }} 
-                    >
+                    <div className="relative w-full h-full bg-pikelmore-taupe">
                          <Image
                             src={image.url}
                             alt={`Galeri Foto ${index}`}
@@ -83,7 +79,7 @@ const PortfolioGallery = () => {
                             sizes="(max-width: 768px) 50vw, 25vw"
                             // KUNCI PERBAIKAN: object-contain menjaga rasio dan mencegah pemotongan
                             className="object-contain transition-transform duration-300 group-hover:scale-105" 
-                            style={{ padding: '5px' }} // Tambahkan sedikit padding agar tidak menabrak batas
+                            style={{ padding: '5px' }} // Padding untuk visual yang rapi
                         />
                     </div>
                 ) : (
@@ -137,7 +133,7 @@ const PortfolioGallery = () => {
                 <LightboxModal 
                     src={selectedImage} 
                     alt="Zoomed Portfolio Image"
-                    onClose={() => setSelectedImage(null)}
+                    onClose={closeLightbox}
                 />
             )}
         </div>
