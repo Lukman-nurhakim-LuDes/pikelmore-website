@@ -5,4 +5,4 @@ User-agent: *
 Allow: /
 
 # Mendefinisikan lokasi Sitemap untuk membantu Google
-Sitemap: https://portfoliopixelmore.netlify.app/sitemap.xml
+Sitemap: https://pixelmoree.netlify.app/sitemap.xml
