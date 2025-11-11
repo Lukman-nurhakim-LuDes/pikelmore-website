@@ -1,146 +1,147 @@
-// components/PortfolioGallery.jsx (VERSI FINAL: Zoom & Aspect Ratio Fix)
+// components/VisualCollage.jsx
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useAdmin } from '@/context/AdminContext';
-import { fetchContent, updateContent, uploadImage } from '@/lib/api'; // Menggunakan fetchContent untuk mengambil URL
-import Image from 'next/image';
-import LightboxModal from './LightboxModal'; // Import komponen Lightbox
+import React, { useEffect, useState, useRef } from 'react';
+import { useAdmin } from '@/context/AdminContext'; 
+import { fetchContent, updateContent, uploadImage } from '@/lib/api'; 
+import Image from 'next/image'; // WAJIB: Import Next.js Image Component
 
-const PortfolioGallery = () => {
-    const { isEditMode } = useAdmin();
-    // Gunakan state untuk menyimpan 10 URL gambar Galeri
-    const [images, setImages] = useState(Array(10).fill({ id: '', url: '' })); 
-    const [isLoading, setIsLoading] = useState(true);
-    const [selectedImage, setSelectedImage] = useState(null); // State untuk Lightbox
+const VisualCollage = () => {
+  const { isEditMode } = useAdmin();
+  
+  const [content, setContent] = useState({ 
+    title: 'PIXELMORÉ', tagline: 'More Than Just Moments',
+    url_main: '', 
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const IMAGE_COUNT = 10;
+  const titleId = 'collage_title';
+  const taglineId = 'collage_tagline';
+  const urlId = 'collage_url_main';
 
-    // --- 1. Fetch 10 URL Gambar dari Supabase ---
-    useEffect(() => {
-        const loadImages = async () => {
-            const fetchedImages = [];
-            for (let i = 1; i <= IMAGE_COUNT; i++) {
-                const id = `gallery_url_${i}`;
-                const url = await fetchContent(id); // Mengambil URL dari tabel 'content'
-                fetchedImages.push({ id, url: url || '' });
-            }
-            setImages(fetchedImages);
-            setIsLoading(false);
-        };
-        loadImages();
-    }, []);
+  // --- 1. Fetch Konten ---
+  useEffect(() => {
+    const loadContent = async () => {
+      const fetchedTitle = await fetchContent(titleId);
+      const fetchedTagline = await fetchContent(taglineId);
+      const fetchedUrl = await fetchContent(urlId); 
 
-    // Fungsi untuk menutup Lightbox
-    const closeLightbox = () => setSelectedImage(null);
-    
-    // --- 2. Komponen Placeholder dengan Logic Upload ---
-    const ImagePlaceholder = ({ image, index, className }) => {
-        const fileInputRef = useRef(null);
-        const [isUploading, setIsUploading] = useState(false);
-
-        const handleUpload = async (file) => {
-            if (!file) return;
-            setIsUploading(true);
-            const fileName = `gallery-${index}-${Date.now()}`; 
-            
-            const { success, url: newUrl } = await uploadImage(file, fileName, 'portfolio'); // Upload ke folder 'portfolio'
-
-            if (success) {
-                await updateContent(image.id, newUrl); 
-                setImages(prevImages => prevImages.map(img => 
-                    img.id === image.id ? { ...img, url: newUrl } : img
-                ));
-                alert('Gambar galeri berhasil diunggah dan diperbarui!');
-            } else {
-                alert(`Gagal mengunggah gambar: ${newUrl || 'Lihat konsol.'}`);
-            }
-            setIsUploading(false);
-        };
-
-        const innerContent = isUploading 
-            ? 'Mengunggah...' 
-            : (image.url ? '' : `Upload Gambar ${index}`); 
-
-        return (
-            <div 
-                className={`relative overflow-hidden shadow-xl group cursor-pointer ${className}`}
-                style={{ border: isEditMode ? '2px dashed red' : 'none' }}
-                onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} // <-- KLIK UNTUK LIGHTBOX/ZOOM
-            >
-                
-                {/* Tampilan Gambar (FIX: object-contain) */}
-                {image.url && !isUploading ? (
-                    <div 
-                        className="relative w-full h-full bg-pikelmore-taupe" 
-                        // Tambahkan aspect ratio untuk mencegah elemen collapse
-                        style={{ aspectRatio: '1/1' }} 
-                    >
-                         <Image
-                            src={image.url}
-                            alt={`Galeri Foto ${index}`}
-                            fill 
-                            sizes="(max-width: 768px) 50vw, 25vw"
-                            // KUNCI PERBAIKAN: object-contain menjaga rasio dan mencegah pemotongan
-                            className="object-contain transition-transform duration-300 group-hover:scale-105" 
-                            style={{ padding: '5px' }} // Tambahkan sedikit padding agar tidak menabrak batas
-                        />
-                    </div>
-                ) : (
-                    // Placeholder default (warna Mocca/Taupe)
-                    <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
-                        {innerContent}
-                    </div>
-                )}
-
-                {/* Antarmuka Upload (Hanya Tampil di Edit Mode) */}
-                {isEditMode && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                        <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleUpload(e.target.files[0])} accept="image/*" disabled={isUploading}/>
-                        <button 
-                            onClick={() => fileInputRef.current.click()}
-                            className="bg-pikelmore-mocca text-white px-3 py-1 text-sm rounded hover:bg-pikelmore-taupe disabled:bg-gray-400"
-                            disabled={isUploading}
-                        >
-                            {isUploading ? 'Upload...' : 'Upload Baru'}
-                        </button>
-                    </div>
-                )}
-                
-                {/* EFEK HOVER DI MODE VIEW */}
-                {!isEditMode && (
-                   <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
-                        <span className="text-white font-body text-sm opacity-0 group-hover:opacity-100 transition-opacity">Lihat Detail</span>
-                    </div>
-                )}
-            </div>
-        );
+      setContent(prev => ({
+        ...prev,
+        title: fetchedTitle || prev.title,
+        tagline: fetchedTagline || prev.tagline,
+        url_main: fetchedUrl,
+      }));
+      setIsLoading(false);
     };
+    loadContent();
+  }, []);
 
-    if (isLoading) return <div className="text-center py-24 text-white">Memuat Galeri...</div>;
+  // --- 2. Fungsi Simpan Teks ---
+  const handleSave = async () => {
+    setIsSaving(true);
+    await updateContent(titleId, content.title);
+    await updateContent(taglineId, content.tagline);
+    alert('Teks Teaser berhasil diperbarui!');
+    setIsSaving(false);
+  };
+  
+  // --- Logika Upload Gambar ---
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-    return (
-        <div className="mb-24">
-            <h3 className="font-display text-3xl font-semibold mb-12 text-pikelmore-mocca">
-                Koleksi Foto Terbaik Pikelmore
-            </h3>
+  const handleUpload = async (file) => {
+    if (!file) return;
+    setIsUploading(true);
+    const fileName = `single-teaser-${Date.now()}`; 
+    
+    const { success, url: newUrl } = await uploadImage(file, fileName, 'collage'); 
+    if (success) {
+        setContent(c => ({...c, url_main: newUrl}));
+        await updateContent(urlId, newUrl); 
+        alert('Gambar Teaser berhasil diunggah!');
+    } else {
+        alert(`Gagal mengunggah gambar: ${newUrl || 'Lihat konsol.'}`);
+    }
+    setIsUploading(false);
+  };
+  
+
+  if (isLoading) return <div className="text-center py-32 text-pikelmore-black">Memuat Visual...</div>;
+
+  return (
+    <section className="py-24 md:py-32 bg-pikelmore-white text-pikelmore-black"> 
+      <div className="container mx-auto px-6 md:px-8 max-w-5xl">
+
+        {/* --- Konten Teks Edit Teks (DI LUAR AREA FOTO) --- */}
+        {isEditMode && (
+          <div className="text-center font-display mb-4 text-pikelmore-black border border-dashed border-red-500 p-3 mx-auto max-w-5xl">
+            <button onClick={handleSave} disabled={isSaving} className="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-gray-400 mb-4">
+                {isSaving ? 'Menyimpan Teks...' : 'Simpan Teks Teaser'}
+            </button>
+            <input type="text" value={content.title} onChange={(e) => setContent(c => ({...c, title: e.target.value}))} className="font-display text-4xl md:text-6xl font-extrabold mb-1 text-black border p-1 text-center w-full" />
+            <input type="text" value={content.tagline} onChange={(e) => setContent(c => ({...c, tagline: e.target.value}))} className="text-sm font-body text-pikelmore-dark-grey w-full text-center border p-1" />
+          </div>
+        )}
+
+        {/* --- AREA FOTO LANDSCAPE PENUH (FOKUS UTAMA) --- */}
+        <div 
+            className="relative mx-auto border border-pikelmore-taupe shadow-lg overflow-hidden group" 
+            style={{ width: '100%', aspectRatio: '16 / 9' }} // Landscape 16:9
+        >
             
-            {/* Grid Galeri */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                {images.map((image, index) => (
-                    <ImagePlaceholder key={image.id} image={image} index={index + 1} className="h-48 md:h-64" />
-                ))}
-            </div>
-
-            {/* --- Lightbox Modal Component --- */}
-            {selectedImage && (
-                <LightboxModal 
-                    src={selectedImage} 
-                    alt="Zoomed Portfolio Image"
-                    onClose={() => setSelectedImage(null)}
+            {/* GAMBAR LANDSCAPE (Background / Image Component) */}
+            {content.url_main ? (
+                // FIX: Menggunakan Image fill untuk mengisi seluruh area
+                <Image 
+                    src={content.url_main}
+                    alt={content.title || "PIXELMORÉ Cinematic Teaser"}
+                    fill // <-- Mengisi seluruh parent div
+                    style={{ objectFit: 'cover' }} // Memastikan gambar memenuhi area
+                    priority 
+                    sizes="(max-width: 768px) 100vw, 100vw"
                 />
+            ) : (
+                // Placeholder jika URL belum ada
+                <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
+                    FOTO LANDSCAPE PENUH BELUM DIUNGGAH
+                </div>
+            )}
+            
+            {/* --- KONTEN TEKS DIPOSISIKAN DI TENGAH GAMBAR (VIEW MODE ONLY) --- */}
+            {!isEditMode && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10 bg-black/30">
+                    <h2 className="font-display text-4xl md:text-6xl font-extrabold mb-1 text-white uppercase tracking-widest">
+                        {content.title}
+                    </h2>
+                    <p className="text-sm font-body text-pikelmore-ivory">
+                        {content.tagline}
+                    </p>
+                </div>
+            )}
+            
+            {/* Antarmuka Edit/Upload Gambar */}
+            {isEditMode && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleUpload(e.target.files[0])} accept="image/*" disabled={isUploading}/>
+                    <button 
+                        onClick={() => fileInputRef.current.click()}
+                        className="bg-red-600 text-white px-4 py-2 text-md rounded hover:bg-red-700 disabled:bg-gray-400"
+                        disabled={isUploading}
+                    >
+                        {isUploading ? 'Mengunggah...' : 'Upload Gambar Landscape'}
+                    </button>
+                </div>
             )}
         </div>
-    );
+        
+        <div className="text-center font-body text-sm mt-8 text-pikelmore-black">
+           PIXELMORÉ
+        </div>
+        
+      </div>
+    </section>
+  );
 };
-export default PortfolioGallery;
+export default VisualCollage;
