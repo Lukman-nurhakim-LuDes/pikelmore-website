@@ -2,8 +2,9 @@
 'use client'; 
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase'; // Import client Supabase
-import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { formatRupiah } from '@/lib/utils'; // Menggunakan formatRupiah dari utils
+// import { useRouter } from 'next/navigation'; // Dinonaktifkan untuk stabilisasi form
 
 const BookingForm = ({ id }) => {
   const [packages, setPackages] = useState([]);
@@ -16,18 +17,21 @@ const BookingForm = ({ id }) => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
-  const router = useRouter();
   
+  // FIX: Deklarasi state 'message'
+  const [message, setMessage] = useState(null); 
+
+  // const router = useRouter(); // Dinonaktifkan
+
   // --- FETCH DAFTAR PAKET UNTUK DROPDOWN ---
   useEffect(() => {
     const fetchPackages = async () => {
-      let { data, error } = await supabase.from('packages').select('name');
+      let { data, error } = await supabase.from('packages').select('name, price'); // Ambil nama dan harga
       if (error) {
         console.error("Error fetching packages for form:", error);
         setError("Gagal memuat pilihan paket.");
       } else {
-        setPackages(data.map(pkg => pkg.name)); 
+        setPackages(data); // Simpan objek paket
       }
       setLoading(false);
     };
@@ -42,6 +46,7 @@ const BookingForm = ({ id }) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setMessage(null); // Bersihkan pesan lama
 
     if (!formData.package_name || !formData.name || !formData.whatsapp || !formData.preferred_date) {
         setError("Semua kolom wajib diisi.");
@@ -49,7 +54,7 @@ const BookingForm = ({ id }) => {
         return;
     }
     
-    // NOMOR WHATSAPP PIKELMORE (GANTI INI)
+    // NOMOR WHATSAPP PIXELMORÉ (GANTI dengan nomor yang sudah Anda uji)
     const whatsappNumber = '6287779152773'; 
 
     // --- 1. Simpan ke Tabel bookings Supabase (INSERT) ---
@@ -58,21 +63,21 @@ const BookingForm = ({ id }) => {
       client_whatsapp: formData.whatsapp,
       package_name: formData.package_name,
       preferred_date: formData.preferred_date,
-      status: 'Pending', 
+      status: 'Pending',
     };
 
     const { error: insertError } = await supabase.from('bookings').insert([bookingData]);
 
     if (insertError) {
       console.error('Supabase Insert Error:', insertError);
-      setError("Gagal menyimpan pemesanan ke database. Coba lagi.");
+      setError("Gagal menyimpan pemesanan ke database. Silakan coba lagi.");
       setIsSubmitting(false);
       return;
     }
 
     // --- 2. Generate Link WhatsApp API Otomatis ---
     const whatsappMessage = `
-Halo Pikelmore! Saya ingin memesan paket *${formData.package_name}*.
+Halo PIXELMORÉ! Saya ingin memesan paket *${formData.package_name}*.
 
 Detail Pemesan:
 Nama: ${formData.name}
@@ -83,111 +88,108 @@ Mohon konfirmasi ketersediaan dan detail selanjutnya.
     `.trim();
 
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
 
     // --- 3. Arahkan ke WhatsApp ---
     window.open(whatsappUrl, '_blank');
     
-    // Reset form dan notifikasi sukses
-    alert(`Pemesanan ${formData.package_name} berhasil dikirim! Silakan lanjutkan di WhatsApp.`);
+    // Set pesan sukses dan reset form
+    setMessage(`Pemesanan ${formData.package_name} berhasil dikirim! Silakan lanjutkan di WhatsApp.`);
     setFormData({ name: '', whatsapp: '', package_name: '', preferred_date: '' });
     setIsSubmitting(false);
   };
 
   return (
-    <section id={id} className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <h2 className="text-pikelmore-dark text-center text-4xl font-display mb-10">
+    <section id={id} className="py-24 md:py-32 bg-white text-pikelmore-dark-grey">
+      <div className="container mx-auto px-6 md:px-8 max-w-3xl">
+        <h2 className="font-display text-4xl md:text-5xl font-bold mb-8 text-center text-pikelmore-mocca">
           Pesan Sekarang
         </h2>
-        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Pilih Paket */}
-            <div>
-              <label htmlFor="package" className="block text-pikelmore-dark text-sm font-semibold mb-2">
-                Pilih Paket
-              </label>
-              <select
-                id="package"
-                name="package"
-                value={formData.package}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
-                           text-pikelmore-dark" // <-- FIX INI: Tambahkan text-pikelmore-dark
+        <div className="border p-8 rounded-lg shadow-xl bg-pikelmore-ivory">
+          
+          {loading && <p className="text-center font-body text-pikelmore-dark-grey">Memuat pilihan paket...</p>}
+          {error && <p className="text-center font-body text-red-600 border border-red-600 p-2 rounded mb-4">{error}</p>}
+          {message && <p className="text-center font-body text-green-700 border border-green-700 p-2 rounded mb-4">{message}</p>}
+
+
+          {!loading && (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              
+              {/* Pilihan Paket (Teks Gelap untuk Kontras) */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-pikelmore-dark-grey">Pilih Paket:</label>
+                <select 
+                    name="package_name"
+                    value={formData.package_name}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-mocca focus:ring-pikelmore-mocca text-pikelmore-dark-grey"
+                    required
+                >
+                    <option value="">-- Pilih Paket Fotografi --</option>
+                    {packages.map(pkg => (
+                        <option key={pkg.name} value={pkg.name}>
+                            {pkg.name} - {formatRupiah(pkg.price)}
+                        </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Nama Klien (Teks Gelap untuk Kontras) */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-pikelmore-dark-grey" htmlFor="name">Nama Lengkap</label>
+                <input 
+                    type="text" 
+                    name="name"
+                    id="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Masukkan nama lengkap Anda"
+                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-mocca focus:ring-pikelmore-mocca text-pikelmore-dark-grey placeholder-gray-500"
+                    required
+                />
+              </div>
+
+              {/* Nomor WhatsApp (Teks Gelap untuk Kontras) */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-pikelmore-dark-grey" htmlFor="whatsapp">Nomor WhatsApp (Contoh: 62812...)</label>
+                <input 
+                    type="tel" 
+                    name="whatsapp"
+                    id="whatsapp"
+                    value={formData.whatsapp}
+                    onChange={handleChange}
+                    placeholder="Contoh: 6281234567890"
+                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-mocca focus:ring-pikelmore-mocca text-pikelmore-dark-grey placeholder-gray-500"
+                    required
+                    pattern="[0-9]+" 
+                />
+              </div>
+
+              {/* Tanggal yang Diinginkan (Teks Gelap untuk Kontras) */}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-pikelmore-dark-grey" htmlFor="preferred_date">Tanggal Pemotretan yang Diinginkan</label>
+                <input 
+                    type="date" 
+                    name="preferred_date"
+                    id="preferred_date"
+                    value={formData.preferred_date}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg font-body focus:border-pikelmore-mocca focus:ring-pikelmore-mocca text-pikelmore-dark-grey"
+                    required
+                />
+              </div>
+
+              {/* Tombol Submit */}
+              <button 
+                type="submit" 
+                className="w-full bg-pikelmore-mocca text-white font-body font-bold py-3 rounded-lg shadow-md hover:bg-pikelmore-taupe transition-colors disabled:bg-gray-400"
+                disabled={isSubmitting || loading}
               >
-                <option value="">-- Pilih Paket Fotografi --</option>
-                {packages.map((pkg) => (
-                  <option key={pkg.id} value={pkg.name}>
-                    {pkg.name} - Rp{pkg.price.toLocaleString('id-ID')}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {isSubmitting ? 'Memproses...' : 'Kirim Pesanan & Lanjutkan ke WhatsApp'}
+              </button>
+            </form>
+          )}
 
-            {/* Nama Lengkap */}
-            <div>
-              <label htmlFor="fullName" className="block text-pikelmore-dark text-sm font-semibold mb-2">
-                Nama Lengkap
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Masukkan nama lengkap Anda"
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
-                           text-pikelmore-dark placeholder-gray-500" // <-- FIX INI: Tambahkan text-pikelmore-dark dan placeholder-gray-500
-              />
-            </div>
-
-            {/* Nomor WhatsApp */}
-            <div>
-              <label htmlFor="whatsapp" className="block text-pikelmore-dark text-sm font-semibold mb-2">
-                Nomor WhatsApp (Contoh: 62812...)
-              </label>
-              <input
-                type="tel"
-                id="whatsapp"
-                name="whatsapp"
-                value={formData.whatsapp}
-                onChange={handleChange}
-                placeholder="Contoh: 6281234567890"
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
-                           text-pikelmore-dark placeholder-gray-500" // <-- FIX INI
-              />
-            </div>
-
-            {/* Tanggal Pemotretan */}
-            <div>
-              <label htmlFor="date" className="block text-pikelmore-dark text-sm font-semibold mb-2">
-                Tanggal Pemotretan yang Diinginkan
-              </label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pikelmore-mocca 
-                           text-pikelmore-dark" // <-- FIX INI: Tanggal tidak pakai placeholder-gray-500
-              />
-            </div>
-            
-            {/* ... (tombol submit dan pesan loading tetap sama) ... */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-pikelmore-mocca text-white py-2 px-4 rounded-md hover:bg-opacity-90 transition-colors duration-300 font-semibold"
-            >
-              {loading ? 'Mengirim...' : 'Kirim Pesan'}
-            </button>
-            {message && <p className="mt-4 text-center text-sm text-green-600">{message}</p>}
-          </form>
         </div>
       </div>
     </section>
