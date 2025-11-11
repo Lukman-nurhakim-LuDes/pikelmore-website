@@ -1,10 +1,11 @@
-// components/VisualCollage.jsx
+// components/VisualCollage.jsx (VERSI FINAL: FULL WIDTH & NO PADDING)
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useAdmin } from '@/context/AdminContext'; 
 import { fetchContent, updateContent, uploadImage } from '@/lib/api'; 
-import Image from 'next/image'; // WAJIB: Import Next.js Image Component
+import Image from 'next/image'; 
+import { getUniqueUrl } from '@/lib/utils'; 
 
 const VisualCollage = () => {
   const { isEditMode } = useAdmin();
@@ -23,17 +24,17 @@ const VisualCollage = () => {
   // --- 1. Fetch Konten ---
   useEffect(() => {
     const loadContent = async () => {
-      const fetchedTitle = await fetchContent(titleId);
-      const fetchedTagline = await fetchContent(taglineId);
-      const fetchedUrl = await fetchContent(urlId); 
-
-      setContent(prev => ({
-        ...prev,
-        title: fetchedTitle || prev.title,
-        tagline: fetchedTagline || prev.tagline,
-        url_main: fetchedUrl,
-      }));
-      setIsLoading(false);
+        const fetchedTitle = await fetchContent(titleId);
+        const fetchedTagline = await fetchContent(taglineId);
+        const fetchedUrl = await fetchContent(urlId); 
+    
+        setContent(prev => ({
+            ...prev,
+            title: fetchedTitle || prev.title,
+            tagline: fetchedTagline || prev.tagline,
+            url_main: fetchedUrl,
+        }));
+        setIsLoading(false);
     };
     loadContent();
   }, []);
@@ -43,8 +44,8 @@ const VisualCollage = () => {
     setIsSaving(true);
     await updateContent(titleId, content.title);
     await updateContent(taglineId, content.tagline);
-    alert('Teks Teaser berhasil diperbarui!');
     setIsSaving(false);
+    alert('Teks teaser berhasil disimpan!');
   };
   
   // --- Logika Upload Gambar ---
@@ -71,12 +72,14 @@ const VisualCollage = () => {
   if (isLoading) return <div className="text-center py-32 text-pikelmore-black">Memuat Visual...</div>;
 
   return (
-    <section className="py-24 md:py-32 bg-pikelmore-white text-pikelmore-black"> 
-      <div className="container mx-auto px-6 md:px-8 max-w-5xl">
+    // FIX: Gunakan bg-transparent dan hapus padding default section
+    <section className="bg-transparent text-pikelmore-black p-0 md:p-0"> 
+      {/* Hapus container mx-auto px-6 md:px-8 max-w-5xl jika ingin benar-benar full-width */}
+      <div className="relative w-full overflow-hidden"> 
 
         {/* --- Konten Teks Edit Teks (DI LUAR AREA FOTO) --- */}
         {isEditMode && (
-          <div className="text-center font-display mb-4 text-pikelmore-black border border-dashed border-red-500 p-3 mx-auto max-w-5xl">
+          <div className="text-center font-display mb-4 text-pikelmore-black border border-dashed border-red-500 p-3 mx-auto max-w-5xl z-30 relative bg-white">
             <button onClick={handleSave} disabled={isSaving} className="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-gray-400 mb-4">
                 {isSaving ? 'Menyimpan Teks...' : 'Simpan Teks Teaser'}
             </button>
@@ -86,30 +89,29 @@ const VisualCollage = () => {
         )}
 
         {/* --- AREA FOTO LANDSCAPE PENUH (FOKUS UTAMA) --- */}
+        {/* FIX: Hapus border dan gunakan w-full h-auto untuk mengisi lebar */}
         <div 
-            className="relative mx-auto border border-pikelmore-taupe shadow-lg overflow-hidden group" 
-            style={{ width: '100%', aspectRatio: '16 / 9' }} // Landscape 16:9
+            className="relative w-full h-auto overflow-hidden group" 
+            style={{ aspectRatio: '16 / 9' }} // Landscape 16:9
         >
             
             {/* GAMBAR LANDSCAPE (Background / Image Component) */}
             {content.url_main ? (
-                // FIX: Menggunakan Image fill untuk mengisi seluruh area
                 <Image 
-                    src={content.url_main}
+                    src={getUniqueUrl(content.url_main)}
                     alt={content.title || "PIXELMORÉ Cinematic Teaser"}
-                    fill // <-- Mengisi seluruh parent div
-                    style={{ objectFit: 'cover' }} // Memastikan gambar memenuhi area
+                    fill 
+                    style={{ objectFit: 'cover' }} 
                     priority 
-                    sizes="(max-width: 768px) 100vw, 100vw"
+                    sizes="100vw" // FIX: Ambil seluruh lebar viewport
                 />
             ) : (
-                // Placeholder jika URL belum ada
                 <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
                     FOTO LANDSCAPE PENUH BELUM DIUNGGAH
                 </div>
             )}
             
-            {/* --- KONTEN TEKS DIPOSISIKAN DI TENGAH GAMBAR (VIEW MODE ONLY) --- */}
+            {/* ... (KONTEN TEKS DIPOSISIKAN DI TENGAH GAMBAR) ... */}
             {!isEditMode && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10 bg-black/30">
                     <h2 className="font-display text-4xl md:text-6xl font-extrabold mb-1 text-white uppercase tracking-widest">
@@ -136,9 +138,12 @@ const VisualCollage = () => {
             )}
         </div>
         
-        <div className="text-center font-body text-sm mt-8 text-pikelmore-black">
-           PIXELMORÉ
-        </div>
+        {/* Watermark/Kaki Gambar */}
+        {!isEditMode && (
+            <div className="text-center font-body text-xs text-pikelmore-dark-grey mt-2">
+                PIXELMORÉ
+            </div>
+        )}
         
       </div>
     </section>
