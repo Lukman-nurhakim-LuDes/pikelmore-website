@@ -1,21 +1,12 @@
 /* app/globals.css */
 
-/* --- IMPORT CSS EKSTERNAL (HARUS SINTAKS @import) --- */
-
-/* 1. Import Font Paling Atas */
+/* --- Impor Font Pikelmore (HARUS PALING ATAS) --- */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap');
 
-/* 2. Import CSS Swiper (WAJIB) */
-@import 'swiper/css';
-@import 'swiper/css/pagination';
-@import 'swiper/css/navigation'; 
-
-
-/* --- DIREKTIF WAJIB Tailwind CSS --- */
+/* --- Direktif WAJIB Tailwind CSS --- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 /* --- Styling Dasar --- */
 html {
