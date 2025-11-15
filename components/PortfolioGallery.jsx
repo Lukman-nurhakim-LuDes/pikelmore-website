@@ -1,4 +1,4 @@
-// components/PortfolioGallery.jsx (VERSI FINAL: Fix Mobile Layout & Image Rendering)
+// components/PortfolioGallery.jsx (VERSI FINAL: Fix Padding & Zoom)
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -16,7 +16,7 @@ const PortfolioGallery = () => {
 
     const IMAGE_COUNT = 10;
 
-    // --- 1. Fetch 10 URL Gambar dari Supabase ---
+    // --- 1. Logic Fetch Gambar ---
     useEffect(() => {
         const loadImages = async () => {
             const fetchedImages = [];
@@ -65,20 +65,20 @@ const PortfolioGallery = () => {
             <div 
                 className={`relative overflow-hidden shadow-xl group cursor-pointer ${className}`}
                 style={{ border: isEditMode ? '2px dashed red' : 'none', aspectRatio: '1 / 1' }} 
-                onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} 
+                onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} // <-- TRIGGER LIGHTBOX
             >
                 
-                {/* Tampilan Gambar (FIX: object-contain) */}
+                {/* Tampilan Gambar (FIX: object-contain TANPA PADDING) */}
                 {image.url && !isUploading ? (
                     <div className="relative w-full h-full bg-pikelmore-taupe">
                          <Image
                             src={getUniqueUrl(image.url)} // <-- MENGGUNAKAN CACHE BUSTING
                             alt={`Galeri Foto ${index}`}
                             fill 
-                            // FIX: Memberi Next.js petunjuk ukuran untuk rendering mobile yang stabil
-                            sizes="(max-width: 600px) 50vw, (max-width: 1024px) 33vw, 20vw" 
-                            className="object-contain transition-transform duration-300 group-hover:scale-105" 
-                            style={{ padding: '5px' }} 
+                            sizes="(max-width: 768px) 50vw, 25vw"
+                            // KUNCI PERBAIKAN: object-contain menjaga rasio dan mencegah pemotongan
+                            className="object-contain transition-transform duration-300 group-hover:scale-105 p-0" // <-- p-0 DI SINI
+                            // HAPUS STYLE PADDING MANUAL
                         />
                     </div>
                 ) : (
@@ -120,8 +120,8 @@ const PortfolioGallery = () => {
                 Koleksi Foto Terbaik Pikelmore
             </h3>
             
-            {/* GRID UTAMA: FIX LAYOUT MOBILE (2 kolom di mobile, 4 kolom di desktop) */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"> 
+            {/* Grid Galeri (Fix Mobile Layout: 2 kolom default) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {images.map((image, index) => (
                     <ImagePlaceholder key={image.id} image={image} index={index + 1} className="h-48 md:h-64" />
                 ))}
