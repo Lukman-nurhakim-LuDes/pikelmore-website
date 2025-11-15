@@ -1,4 +1,4 @@
-// components/PortfolioGallery.jsx (VERSI FINAL TERBAIK & STABIL)
+// components/PortfolioGallery.jsx (VERSI FINAL: Fix Mobile Layout & Image Rendering)
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -16,7 +16,7 @@ const PortfolioGallery = () => {
 
     const IMAGE_COUNT = 10;
 
-    // --- 1. Logic Fetch tetap sama ---
+    // --- 1. Fetch 10 URL Gambar dari Supabase ---
     useEffect(() => {
         const loadImages = async () => {
             const fetchedImages = [];
@@ -68,26 +68,27 @@ const PortfolioGallery = () => {
                 onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} 
             >
                 
-                {/* Tampilan Gambar (FINAL FIX) */}
+                {/* Tampilan Gambar (FIX: object-contain) */}
                 {image.url && !isUploading ? (
-                    // Kunci Perbaikan: Tambahkan p-1 (padding kecil) ke container div, bukan ke tag Image
-                    <div className="relative w-full h-full bg-pikelmore-taupe p-1"> 
+                    <div className="relative w-full h-full bg-pikelmore-taupe">
                          <Image
-                            src={getUniqueUrl(image.url)} 
+                            src={getUniqueUrl(image.url)} // <-- MENGGUNAKAN CACHE BUSTING
                             alt={`Galeri Foto ${index}`}
                             fill 
-                            sizes="(max-width: 768px) 50vw, 25vw"
+                            // FIX: Memberi Next.js petunjuk ukuran untuk rendering mobile yang stabil
+                            sizes="(max-width: 600px) 50vw, (max-width: 1024px) 33vw, 20vw" 
                             className="object-contain transition-transform duration-300 group-hover:scale-105" 
-                            // HAPUS style={{ padding: '5px' }}
+                            style={{ padding: '5px' }} 
                         />
                     </div>
                 ) : (
+                    // Placeholder default (warna Mocca/Taupe)
                     <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
                         {innerContent}
                     </div>
                 )}
 
-                {/* ... (Antarmuka Upload dan EFEK HOVER tetap sama) ... */}
+                {/* Antarmuka Upload (Hanya Tampil di Edit Mode) */}
                 {isEditMode && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleUpload(e.target.files[0])} accept="image/*" disabled={isUploading}/>
@@ -119,7 +120,8 @@ const PortfolioGallery = () => {
                 Koleksi Foto Terbaik Pikelmore
             </h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+            {/* GRID UTAMA: FIX LAYOUT MOBILE (2 kolom di mobile, 4 kolom di desktop) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"> 
                 {images.map((image, index) => (
                     <ImagePlaceholder key={image.id} image={image} index={index + 1} className="h-48 md:h-64" />
                 ))}
