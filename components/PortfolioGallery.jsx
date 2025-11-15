@@ -1,4 +1,4 @@
-// components/PortfolioGallery.jsx (VERSI FINAL: Fix Padding & Zoom)
+// components/PortfolioGallery.jsx (VERSI FINAL: Fix Grid, Padding Gambar, dan Zoom)
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -65,20 +65,19 @@ const PortfolioGallery = () => {
             <div 
                 className={`relative overflow-hidden shadow-xl group cursor-pointer ${className}`}
                 style={{ border: isEditMode ? '2px dashed red' : 'none', aspectRatio: '1 / 1' }} 
-                onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} // <-- TRIGGER LIGHTBOX
+                onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} 
             >
                 
                 {/* Tampilan Gambar (FIX: object-contain TANPA PADDING) */}
                 {image.url && !isUploading ? (
                     <div className="relative w-full h-full bg-pikelmore-taupe">
                          <Image
-                            src={getUniqueUrl(image.url)} // <-- MENGGUNAKAN CACHE BUSTING
+                            src={getUniqueUrl(image.url)} 
                             alt={`Galeri Foto ${index}`}
                             fill 
                             sizes="(max-width: 768px) 50vw, 25vw"
                             // KUNCI PERBAIKAN: object-contain menjaga rasio dan mencegah pemotongan
-                            className="object-contain transition-transform duration-300 group-hover:scale-105 p-0" // <-- p-0 DI SINI
-                            // HAPUS STYLE PADDING MANUAL
+                            className="object-contain transition-transform duration-300 group-hover:scale-105 p-0" 
                         />
                     </div>
                 ) : (
@@ -121,7 +120,8 @@ const PortfolioGallery = () => {
             </h3>
             
             {/* Grid Galeri (Fix Mobile Layout: 2 kolom default) */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {/* HAPUS px-4/px-6 di div ini */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
                 {images.map((image, index) => (
                     <ImagePlaceholder key={image.id} image={image} index={index + 1} className="h-48 md:h-64" />
                 ))}
