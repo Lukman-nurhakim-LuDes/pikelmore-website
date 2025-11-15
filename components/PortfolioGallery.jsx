@@ -1,4 +1,4 @@
-// components/PortfolioGallery.jsx (VERSI FINAL: Zoom & Aspect Ratio Fix)
+// components/PortfolioGallery.jsx (VERSI FINAL TERBAIK & STABIL)
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -10,20 +10,19 @@ import { getUniqueUrl } from '@/lib/utils'; // Cache Busting
 
 const PortfolioGallery = () => {
     const { isEditMode } = useAdmin();
-    // Gunakan state untuk menyimpan 10 URL gambar Galeri dari tabel 'content'
     const [images, setImages] = useState(Array(10).fill({ id: '', url: '' })); 
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedImage, setSelectedImage] = useState(null); // State untuk Lightbox
+    const [selectedImage, setSelectedImage] = useState(null); 
 
     const IMAGE_COUNT = 10;
 
-    // --- 1. Fetch 10 URL Gambar dari Supabase ---
+    // --- 1. Logic Fetch tetap sama ---
     useEffect(() => {
         const loadImages = async () => {
             const fetchedImages = [];
             for (let i = 1; i <= IMAGE_COUNT; i++) {
                 const id = `gallery_url_${i}`;
-                const url = await fetchContent(id); // Mengambil URL dari tabel 'content'
+                const url = await fetchContent(id); 
                 fetchedImages.push({ id, url: url || '' });
             }
             setImages(fetchedImages);
@@ -44,7 +43,7 @@ const PortfolioGallery = () => {
             setIsUploading(true);
             const fileName = `gallery-${index}-${Date.now()}`; 
             
-            const { success, url: newUrl } = await uploadImage(file, fileName, 'portfolio'); // Upload ke folder 'portfolio'
+            const { success, url: newUrl } = await uploadImage(file, fileName, 'portfolio'); 
 
             if (success) {
                 await updateContent(image.id, newUrl); 
@@ -66,30 +65,29 @@ const PortfolioGallery = () => {
             <div 
                 className={`relative overflow-hidden shadow-xl group cursor-pointer ${className}`}
                 style={{ border: isEditMode ? '2px dashed red' : 'none', aspectRatio: '1 / 1' }} 
-                onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} // <-- TRIGGER LIGHTBOX
+                onClick={() => !isEditMode && image.url && setSelectedImage(image.url)} 
             >
                 
-                {/* Tampilan Gambar (FIX: object-contain) */}
+                {/* Tampilan Gambar (FINAL FIX) */}
                 {image.url && !isUploading ? (
-                    <div className="relative w-full h-full bg-pikelmore-taupe">
+                    // Kunci Perbaikan: Tambahkan p-1 (padding kecil) ke container div, bukan ke tag Image
+                    <div className="relative w-full h-full bg-pikelmore-taupe p-1"> 
                          <Image
-                            src={getUniqueUrl(image.url)} // <-- MENGGUNAKAN CACHE BUSTING
+                            src={getUniqueUrl(image.url)} 
                             alt={`Galeri Foto ${index}`}
                             fill 
                             sizes="(max-width: 768px) 50vw, 25vw"
-                            // KUNCI PERBAIKAN: object-contain menjaga rasio dan mencegah pemotongan
                             className="object-contain transition-transform duration-300 group-hover:scale-105" 
-                            style={{ padding: '5px' }} // Padding untuk visual yang rapi
+                            // HAPUS style={{ padding: '5px' }}
                         />
                     </div>
                 ) : (
-                    // Placeholder default (warna Mocca/Taupe)
                     <div className="w-full h-full bg-pikelmore-taupe flex items-center justify-center text-white/70">
                         {innerContent}
                     </div>
                 )}
 
-                {/* Antarmuka Upload (Hanya Tampil di Edit Mode) */}
+                {/* ... (Antarmuka Upload dan EFEK HOVER tetap sama) ... */}
                 {isEditMode && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                         <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleUpload(e.target.files[0])} accept="image/*" disabled={isUploading}/>
